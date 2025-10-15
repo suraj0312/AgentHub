@@ -1,8 +1,5 @@
 # 🖥️ AGUI Server
 
-!Build Status  
-!License: MIT
-
 This folder contains the **AGUI server** and supporting scripts for running local agents and orchestrators used by the AgentHub project.
 
 ---

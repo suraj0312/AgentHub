@@ -1,8 +1,5 @@
 # 🚀 AgentHub
 
-!Build Status  
-!License: MIT
-
 **AgentHub** is a powerful platform for managing and observing A2A (Agent-to-Agent) interactions. With AgentHub, you can easily register agents via URL, orchestrate multi-agent workflows, and enable collaborative task execution. Whether you're working with remote agents or building local ones tailored to your needs, AgentHub provides a clean and intuitive interface to streamline your agent operations.
 
 ---

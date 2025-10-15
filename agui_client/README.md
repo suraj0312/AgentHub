@@ -1,8 +1,5 @@
 # 💬 AGUI Client
 
-!Build Status  
-!License: MIT
-
 Welcome to the **AGUI Client** — the interactive frontend for AgentHub! This interface allows you to chat with agents, create orchestrators, set up local agents, and explore many more exciting features.
 
 ---

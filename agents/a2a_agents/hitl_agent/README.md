@@ -1,8 +1,5 @@
 # 🧠 HITL Agent
 
-!Build Status  
-!License: MIT
-
 The **HITL (Human-In-The-Loop) Agent** enables interactive command execution with model assistance. Users issue commands, and the model responds intelligently. If the model encounters uncertainty or requires clarification, it will prompt the user with `transfer-to-user`, allowing seamless human intervention.
 
 ---
