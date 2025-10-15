@@ -1,0 +1,16 @@
+.chatWindow {
+  flex: 1;
+  min-width: 0;
+  background: #fafbfc;
+  padding: 1rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #5f5f5f transparent;
+  height: calc(100% - 6px);
+  background: rgba(255, 255, 255, 1);
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid white;
+  margin-right: 0.4rem;
+  padding: 0.5rem 0.5rem;
+}

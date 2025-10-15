@@ -1,0 +1,136 @@
+.ribbon {
+  display: flex;
+  gap: 1rem;
+  padding: 0.3rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  align-items: center;
+  border-radius: 20px;
+  margin: 0.5rem; 
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(7.7px);
+  -webkit-backdrop-filter: blur(7.7px);
+  border: 2px solid white;
+  font-size: 12px;
+}
+
+/* 3 way toggle switch */
+.toggleGroup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  max-width: max-content;
+  margin-left: 2.5rem;
+  margin-right: 2.5rem;
+}
+
+.toggleGroup input[type="radio"] {
+  opacity: 0;
+  position: absolute;
+}
+
+.toggleGroup input[type="radio"] + label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 20px;
+  background-color: transparent;
+  width: 100%;
+  transition: all 0.3s ease;
+  padding: 0.15rem 1.6rem;
+  color: #5f5f5f;
+}
+
+.toggleGroup input[type="radio"]:not(:is(:checked)) + label {
+  background-color: transparent;
+}
+
+.toggleGroup input[id="a2a_agents"] + label {
+  background-color: white;
+}
+
+.toggleGroup input[id="orchestrators"] + label {
+  background-color: white;
+}
+
+.toggleGroup input[id="local_agents"] + label {
+  background-color: white;
+}
+
+.separator {
+  width: 0.6px;
+  height: 44;
+  background: #b2b2b2;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-left: 0.5rem;
+  overflow-y: auto;
+  padding: 0.3rem;
+}
+
+.button {
+  padding: 0.3rem 0.8rem;
+  background: #fff;
+  color: #5f5f5f;
+  border: 1px solid white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  text-wrap: nowrap;
+}
+
+.button:hover {
+  padding: 0.3rem 0.8rem;
+  background: transparent;
+  color: #5f5f5f;
+  border: 1px solid #5f5f5f;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.selected {
+  padding: 0.3rem 0.8rem;
+  background: #5f5f5f;
+  color: #ffffff;
+  border: 1px solid #5f5f5f;
+  border-radius: 8px;
+  font-weight: 500;
+  text-wrap: nowrap;
+}
+
+.customScrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+  background-color: #ffffff00; /* RE-ADDED */
+}
+
+.customScrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0px;
+}
+
+.customScrollbar::-webkit-scrollbar-thumb {
+  background-color: #ffffff64;
+  border-radius: 0px;
+}
+
+.customScrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #ffffff92;
+}
+
+.customScrollbar::-webkit-scrollbar-thumb:active {
+  background-color: #ffffff92;
+}
+
+.customScrollbar::-webkit-scrollbar-corner {
+  background: #ffffff64;
+}

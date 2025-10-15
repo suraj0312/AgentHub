@@ -1,0 +1,17 @@
+{
+  "capabilities": {"streaming": true},
+  "defaultInputModes": ["text/plain"],
+  "defaultOutputModes": ["text/plain"],
+  "description": "An agent specialized in rolling a dice of spicified sides. Based on user given sides it can pick a random number between 1 and the specified sides",
+  "name": "roll_agent",
+  "skills": [
+    {
+      "id": "rolling_dice",
+      "name": "Roll Dice",
+      "description": "Pick a random number betwwen 1 and given number of sides",
+      "tags": ["random", "numbers", "integer"]
+    }
+  ],
+  "url": "http://localhost:8002",
+  "version": "1.0.0"
+}
