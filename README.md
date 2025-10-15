@@ -26,16 +26,23 @@
 
 ### 🚀 One-Click Setup (Recommended)
 
-1. 📝 Create a `.env` file in the `agents/git_agent` directory with the following content:
+1.  - 📝 Create a `.env` file in the `agents/a2a_agents/git_agent` directory with the following content:
 
-   ```env
-   AZURE_OPENAI_API_KEY=<your_azure_openai_api_key>
-   AZURE_OPENAI_ENDPOINT=<your_azure_openai_endpoint>
-   AZURE_OPENAI_API_VERSION=<api_version>
-   AZURE_OPENAI_DEPLOYMENT_NAME=<deployment_name>
-   AZURE_OPENAI_MODEL_NAME=<model_name>
-   GITHUB_TOKEN=<your_github_token>
-   ```
+         ```env
+         AZURE_OPENAI_API_KEY=<your_azure_openai_api_key>
+         AZURE_OPENAI_ENDPOINT=<your_azure_openai_endpoint>
+         AZURE_OPENAI_API_VERSION=<api_version>
+         AZURE_OPENAI_DEPLOYMENT_NAME=<deployment_name>
+         AZURE_OPENAI_MODEL_NAME=<model_name>
+         GITHUB_TOKEN=<your_github_token>
+         ```
+   - 📝 Create another `.env` file in the `agui_server` directory with the following content:
+
+         ```
+         GOOGLE_API_KEY=<your-google-api-key>
+         ```
+
+
 
 2. ▶️ Run the `run.bat` file to start everything in one go.
 
