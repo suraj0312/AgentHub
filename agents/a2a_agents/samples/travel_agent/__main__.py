@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     extension = AgentExtension(
         uri="test",
-        params={"framework": "langchain"})
+        params={"framework": "Langchain"})
     
     agent_card = AgentCard(
         name='travel planner Agent',

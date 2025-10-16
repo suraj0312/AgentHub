@@ -15,7 +15,7 @@ from agent_executer import (
 
 extension = AgentExtension(
     uri="test",
-    params={"framework": "autogen[MagenticOne]"})
+    params={"framework": "Microsoft-AutoGen"})
 if __name__ == '__main__':
     # --8<-- [start:AgentSkill]
     skill = AgentSkill(

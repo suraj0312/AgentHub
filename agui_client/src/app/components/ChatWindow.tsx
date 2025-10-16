@@ -4,7 +4,14 @@ import styles from "./ChatWindow.module.css";
 import "@copilotkit/react-ui/styles.css";
 import { CopilotKitCSSProperties } from "@copilotkit/react-ui";
 
-export default function ChatWindow({ selectedAgentName, selectedAgentDescription, agentUrl, chatHistory, onSendMessage }) {
+interface ChatWindowProps {
+  selectedAgentName: string;
+  selectedAgentDescription: string;
+  
+}
+
+// export default function ChatWindow({ selectedAgentName, selectedAgentDescription, agentUrl, chatHistory, onSendMessage }) {
+export default function ChatWindow({ selectedAgentName, selectedAgentDescription }:ChatWindowProps) {
   // Use agentUrl and chatHistory to display chat for the selected agent
   // onSendMessage to update chat history
   return (

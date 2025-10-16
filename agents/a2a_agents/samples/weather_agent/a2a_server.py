@@ -12,7 +12,7 @@ from agent_executor import WeatherAgentExecutor
 from dotenv import load_dotenv
 # from timestamp_ext import TimestampExtension
 
-
+from starlette.middleware.cors import CORSMiddleware
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
@@ -67,7 +67,19 @@ def main(host, port):
         )
         import uvicorn
 
-        uvicorn.run(server.build(), host=host, port=port)
+        # uvicorn.run(server.build(), host=host, port=port)
+        app = server.build()
+   
+    # Add CORS middleware
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["http://localhost:3000"],  # or ["*"] for development
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+        uvicorn.run(app, host='localhost', port=port)
     except MissingAPIKeyError as e:
         logger.error(f'Error: {e}')
         exit(1)

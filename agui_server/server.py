@@ -1,20 +1,13 @@
-from calendar import c
-import json
 import os
-from threading import local
 import uuid
 import logging
-from pathlib import Path
-from typing import Dict, Literal
+from typing import Any, Dict, Literal
 import uvicorn
-import asyncio
-from fastapi import FastAPI, Request, routing
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, StreamingResponse
 from a2a.client import A2ACardResolver, A2AClient
 from a2a.types import AgentCard, MessageSendParams, SendStreamingMessageRequest
 import httpx
-from asyncio import gather
-from sqlalchemy.future import select
 from orchestrator.orchestrator_builder import get_orchestrator
 from local_agent import get_local_agent
 from google.adk.artifacts import InMemoryArtifactService
@@ -70,13 +63,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-a2a_client: A2AClient | None = None
-httpx_client: httpx.AsyncClient | None = None
-runner: Runner | None = None
-agent_type: Literal["a2a_agent", "orchestrator","local_agent"] | None = None
-# DB_PATH = Path(os.getenv("DB_PATH"))
-base_url = "http://localhost:10000"  # Make this global and mutable
-current_active_orchestrator_or_agent: str | None = None
+# a2a_client: A2AClient | None = None
+httpx_client: httpx.AsyncClient | None = httpx.AsyncClient(timeout=httpx.Timeout(30))
+# runner: Runner | None = None
+# agent_type: Literal["a2a_agent", "orchestrator","local_agent"] | None = None
+base_url = "http://localhost:9999"  # Make this global and mutable
+# current_active_orchestrator_or_agent: str | None = None
+
+
+# Session-specific agent configuration
+session_agent_map: Dict[str, Dict[str, Any]] = {}
+
 
 class TaskContextManager:
     """Manages task and context IDs per (user, agent)."""
@@ -125,18 +122,30 @@ async def get_agents(db= Depends(get_db)):
 @app.post("/set-agent-url")
 async def set_agent_url(request: Request, db=Depends(get_db)):
     """Set the agent base URL dynamically from frontend."""
-    global base_url, a2a_client, httpx_client, agent_type, current_active_orchestrator_or_agent
-
+    # global base_url, a2a_client, httpx_client, agent_type, current_active_orchestrator_or_agent
+    global httpx_client
     data = await request.json()
     logging.info(f"Data Received: {data}")
+
+    session_id = data.get("session_id")
 
     agent_type = data.get("type")
     new_name = data.get("name")
     new_url = data.get("url")
-    current_active_orchestrator_or_agent = new_name
 
-    if not agent_type or not new_name or (agent_type != "local_agent" and not new_url):
+    # current_active_orchestrator_or_agent = new_name
+
+    if not session_id or not agent_type or not new_name or (agent_type != "local_agent" and not new_url):
         return JSONResponse({"error": "Missing required fields"}, status_code=400)
+
+    
+    # Store agent config per session
+    session_agent_map[session_id] = {
+        "type": agent_type,
+        "name": new_name,
+        "url": new_url
+    }
+
 
     # Handle A2A agent initialization
     if agent_type == AgentType.a2a_agent:
@@ -145,8 +154,25 @@ async def set_agent_url(request: Request, db=Depends(get_db)):
         try:
             card: AgentCard = await resolver.get_agent_card()
             a2a_client = A2AClient(httpx_client=httpx_client, agent_card=card)
+            session_agent_map[session_id]["a2a_client"] = a2a_client
             data['description'] = card.description
-            data['framework'] = card.capabilities.extensions[0].params["framework"]
+            
+            key_to_extract = "framework"
+
+            # Safely extract the value if all components exist
+            if (
+                hasattr(card, 'capabilities') and
+                hasattr(card.capabilities, 'extensions') and
+                isinstance(card.capabilities.extensions, list) and
+                len(card.capabilities.extensions) > 0 and
+                hasattr(card.capabilities.extensions[0], 'params') and
+                key_to_extract in card.capabilities.extensions[0].params
+            ):
+                data[key_to_extract] = card.capabilities.extensions[0].params[key_to_extract]
+            else:
+                data[key_to_extract] = "No Information"  # or handle it differently
+
+            # data['framework'] = card.capabilities.extensions[0].params["framework"]
             logging.info(f"Fetched agent card: {card.description}")
         except Exception as e:
             logging.error(f"Failed to fetch agent card: {e}")
@@ -174,27 +200,7 @@ async def update_agent_endpoint(request: Request, db=Depends(get_db)):
 async def startup_event():
     """Initialize A2A client on startup"""
 
-    global a2a_client
-    global httpx_client
-    global base_url
-    # base_url = "http://localhost:9999"
-    logger.info(f"Connecting to A2A server at {base_url}")
     await init_db()
-
-    # Create global AsyncClient
-    httpx_client = httpx.AsyncClient(timeout=httpx.Timeout(30))
-
-    # Resolve AgentCard
-    resolver = A2ACardResolver(httpx_client=httpx_client, base_url=base_url)
-    try:
-        card: AgentCard = await resolver.get_agent_card()
-        logger.info("Fetched public agent card successfully.")
-        a2a_client = A2AClient(httpx_client=httpx_client, agent_card=card)
-    except Exception as e:
-        logger.error(f"Failed to fetch agent card: {e}", exc_info=True)
-        raise
-
-# context_id_data: Dict[str, Dict[str, str]] = {}
 
 
 @app.post("/")
@@ -203,8 +209,13 @@ async def agentic_chat_endpoint(input_data: RunAgentInput, request: Request):
     accept_header = request.headers.get("accept")
     encoder = EventEncoder(accept=accept_header)
     async def event_generator():
-        agent_url = base_url
+        # agent_url = base_url
         user_key = input_data.thread_id
+        agent_config = session_agent_map.get(input_data.thread_id)
+        
+        agent_type = agent_config["type"]
+        agent_url = agent_config["url"]
+
         try:
             if agent_type == "a2a_agent":
                 async for ev in process_a2a_agent_stream(input_data, encoder):
@@ -236,7 +247,11 @@ async def agentic_chat_endpoint(input_data: RunAgentInput, request: Request):
 
 async def process_a2a_agent_stream(input_data: RunAgentInput, encoder: EventEncoder):
     """Handle streaming events from A2A agent."""
-    agent_url = base_url
+    agent_config = session_agent_map.get(input_data.thread_id)
+    agent_url = agent_config["url"]
+    a2a_client = agent_config["a2a_client"]
+
+    # agent_url = base_url
     user_key = input_data.thread_id
     message_id = str(uuid.uuid4().hex)
 
@@ -383,7 +398,13 @@ async def process_a2a_agent_stream(input_data: RunAgentInput, encoder: EventEnco
                 )
                 context_manager.clear(user_key, agent_url)  # cleanup
                 return
-            
+    if not first_chunk_text:
+            yield encoder.encode(
+                TextMessageEndEvent(
+                    type=EventType.TEXT_MESSAGE_END,
+                    message_id=message_id,
+                )
+            )        
     yield encoder.encode(
         RunFinishedEvent(
             type=EventType.RUN_FINISHED,
@@ -395,6 +416,12 @@ async def process_a2a_agent_stream(input_data: RunAgentInput, encoder: EventEnco
 
 async def process_orchestrator_stream(input_data: RunAgentInput, encoder: EventEncoder):
     """Handle streaming from Orchestrator agent using Google ADK directly, yield AG-UI events."""
+    agent_config = session_agent_map.get(input_data.thread_id)
+    
+    agent_type = agent_config["type"]
+    # agent_url = agent_config["url"]
+    current_active_orchestrator_or_agent = agent_config["name"]
+
     message_id = str(uuid.uuid4().hex)
     yield encoder.encode(
     RunStartedEvent(

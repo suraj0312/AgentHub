@@ -151,7 +151,29 @@ class GitManager:
                 return f"Switched to branch (fetched from remote): {branch_name}"
         except GitCommandError as e:
             return f"Error switching branch: {e}"
-        
+    
+    def get_total_commits(self, repo_url: str, branch: str = "main") -> int:
+        """
+        Get the total number of commits in the specified branch of the repository.
+        Args:
+            repo_url: Repository URL
+            branch: Branch name (default is 'main')
+        Returns:
+            Total number of commits as an integer or error message.
+        """
+        clone_path = repo_url.split('github.com/')[-1].replace(".git", "")
+        if not os.path.exists(clone_path):
+            return "Repository not cloned. Clone it first."
+
+        try:
+            repo = Repo(clone_path)
+            commits = list(repo.iter_commits(branch))
+            return len(commits)
+        except GitCommandError as e:
+            return f"Error retrieving commits: {e}"
+        except Exception as e:
+            return f"Unexpected error: {e}"
+   
     def commit_changes(self, commit_message: str, repo_url: str, files: list = None):
         """
         Commit changes with commit_message.
@@ -265,7 +287,7 @@ class GitManager:
         url = f"{self.api_base}/repos/{repo_full_name}/issues/{issue_number}"
         headers = {"Authorization": f"token {self.github_token}"}
 
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers ,verify=False)
 
         if response.status_code == 200:
             issue_data = response.json()
@@ -380,7 +402,7 @@ class GitManager:
 class GitMagenticAgent:
     def __init__(self):
         self.git_manager = GitManager()
-        self.tools = [self.git_manager.clone_repo, self.git_manager.issue_post_comment, self.git_manager.create_branch,self.git_manager.list_branches, self.git_manager.commit_changes, self.git_manager.push_changes, self.git_manager.switch_branch, self.git_manager.pull_changes, self.git_manager.create_pull_request, self.git_manager.get_status, self.git_manager.get_issue, self.git_manager.get_merge_conflicts, self.git_manager.merge_branch]
+        self.tools = [self.git_manager.clone_repo, self.git_manager.issue_post_comment, self.git_manager.create_branch,self.git_manager.list_branches, self.git_manager.commit_changes,self.git_manager.get_total_commits, self.git_manager.push_changes, self.git_manager.switch_branch, self.git_manager.pull_changes, self.git_manager.create_pull_request, self.git_manager.get_status, self.git_manager.get_issue, self.git_manager.get_merge_conflicts, self.git_manager.merge_branch]
         self.git_assistant = AssistantAgent(
                             "GitAssistant",
                             model_client=model_client,
@@ -388,4 +410,4 @@ class GitMagenticAgent:
                             system_message="You are a helpful AI assistant agent, capable of completing specified git related operations with provided tools.",
                             )
 
-        self.team = MagenticOneGroupChat([self.git_assistant], model_client=model_client, max_stalls=2, description="Only perform requested task.")
+        self.team = MagenticOneGroupChat([self.git_assistant], model_client=model_client, max_stalls=2, max_turns=3 ,description="Only perform requested task.")

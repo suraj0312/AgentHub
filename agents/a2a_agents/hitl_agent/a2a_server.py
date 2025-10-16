@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     extension = AgentExtension(
         uri="test",
-        params={"framework": "autogen[RoundRobin]"}
+        params={"framework": "Microsoft-AutoGen"}
     )
 
     public_agent_card = AgentCard(
