@@ -102,6 +102,24 @@ async def fetch_orchestrator_by_name(name: str) -> dict:
             "instructions": agent.instructions,
             "subAgents": json.loads(agent.subAgents) if agent.subAgents else []
         }
+    
+async def fetch_local_agent_by_name(name: str) -> dict:
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(Agent).where(Agent.name == name, Agent.type == AgentType.local_agent)
+        )
+        agent = result.scalar_one_or_none()
+        if not agent:
+            raise ValueError(f"Orchestrator '{name}' not found in database.")
+
+        return {
+            "name": agent.name,
+            "url": agent.url,
+            "type": agent.type,
+            "description": agent.description,
+            "instructions": agent.instructions,
+            "subAgents": json.loads(agent.subAgents) if agent.subAgents else []
+        }
 
 async def delete_agent(data: dict, db: AsyncSession):
     name = data.get("name")

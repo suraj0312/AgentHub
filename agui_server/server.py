@@ -16,7 +16,7 @@ import httpx
 from asyncio import gather
 from sqlalchemy.future import select
 from orchestrator.orchestrator_builder import get_orchestrator
-from local_agent import LocalAgent
+from local_agent import get_local_agent
 from google.adk.artifacts import InMemoryArtifactService
 from google.adk.memory.in_memory_memory_service import InMemoryMemoryService
 from google.adk.runners import Runner
@@ -410,7 +410,7 @@ async def process_orchestrator_stream(input_data: RunAgentInput, encoder: EventE
             print("Orchestrator Agent Initialized:", _agent)
         elif agent_type == "local_agent":
             
-            _agent = LocalAgent(local_agent_name=current_active_orchestrator_or_agent)._build_agent()
+            _agent = await get_local_agent(current_active_orchestrator_or_agent)
 
             print("Local Agent Initialized:", _agent)
 
